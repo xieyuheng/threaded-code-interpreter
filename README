@@ -1,1 +1,6 @@
-embed threaded-code-interpreter in host-language
+threaded-code-interpreter is a simple language implementation technic
+which is widely used in forth language community
+
+this repo teaches you
+how to embed threaded-code-interpreter in other language (called host-language)
+by example
