@@ -212,6 +212,13 @@ define_primitive_function(
 );
 
 define_primitive_function(
+    "bye",
+    function () {
+        console.log("bye bye ^-^/");
+    }
+);
+
+define_primitive_function(
     "dup",
     function () {
         let a = argument_stack.pop();
@@ -231,14 +238,6 @@ define_primitive_function(
     }
 );
 
-define_function(
-    "square",
-    [ "dup",
-      "mul",
-      "end"
-    ]
-);
-
 define_primitive_function(
     "simple-wirte",
     function () {
@@ -249,11 +248,12 @@ define_primitive_function(
 
 define_variable("little-test-number", 4);
 
-define_primitive_function(
-    "bye",
-    function () {
-        console.log("bye bye ^-^/");
-    }
+define_function(
+    "square",
+    [ "dup",
+      "mul",
+      "end"
+    ]
 );
 
 define_function(
