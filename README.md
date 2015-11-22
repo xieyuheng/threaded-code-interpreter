@@ -1,1 +1,1 @@
-# threaded-code-interpreter
+embed threaded-code-interpreter in host-language
