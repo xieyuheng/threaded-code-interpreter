@@ -281,13 +281,58 @@
       );
       #+end_src
 
-*** io
+*** exiting
 
-***** print-tos
+***** bye
 
       #+begin_src js
       define_primitive_function(
-          "print-tos",
+          "bye",
+          function () {
+              console.log("bye bye ^-^/");
+          }
+      );
+      #+end_src
+
+*** the stack
+
+***** dup
+
+      #+begin_src js
+      define_primitive_function(
+          "dup",
+          function () {
+              let a = argument_stack.pop();
+              argument_stack.push(a);
+              argument_stack.push(a);
+              next();
+          }
+      );
+      #+end_src
+
+*** integer
+
+***** mul
+
+      #+begin_src js
+      define_primitive_function(
+          "mul",
+          function () {
+              let a = argument_stack.pop();
+              let b = argument_stack.pop();
+              argument_stack.push(a * b);
+              next();
+          }
+      );
+      #+end_src
+
+*** io
+
+***** simple-wirte
+
+      #+begin_src js
+      define_primitive_function(
+          "simple-wirte",
           function () {
               console.log(argument_stack.pop());
               next();
@@ -300,19 +345,21 @@
 *** little-test
 
     #+begin_src js
-    define_variable("*little-test-number*", 233);
+    define_variable("little-test-number", 4);
 
-    define_primitive_function(
-        "bye",
-        function () {
-            console.log("bye bye ^-^/");
-        }
+    define_function(
+        "square",
+        [ "dup",
+          "mul",
+          "end"
+        ]
     );
 
     define_function(
         "little-test",
-        [ "*little-test-number*",
-          "print-tos",
+        [ "little-test-number",
+          "square",
+          "simple-wirte",
           "bye"
         ]
     );

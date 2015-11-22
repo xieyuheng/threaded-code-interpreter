@@ -212,14 +212,42 @@ define_primitive_function(
 );
 
 define_primitive_function(
-    "print-tos",
+    "dup",
+    function () {
+        let a = argument_stack.pop();
+        argument_stack.push(a);
+        argument_stack.push(a);
+        next();
+    }
+);
+
+define_primitive_function(
+    "mul",
+    function () {
+        let a = argument_stack.pop();
+        let b = argument_stack.pop();
+        argument_stack.push(a * b);
+        next();
+    }
+);
+
+define_function(
+    "square",
+    [ "dup",
+      "mul",
+      "end"
+    ]
+);
+
+define_primitive_function(
+    "simple-wirte",
     function () {
         console.log(argument_stack.pop());
         next();
     }
 );
 
-define_variable("*little-test-number*", 233);
+define_variable("little-test-number", 4);
 
 define_primitive_function(
     "bye",
@@ -230,21 +258,22 @@ define_primitive_function(
 
 define_function(
     "little-test",
-    [ "*little-test-number*",
-      "print-tos",
+    [ "little-test-number",
+      "square",
+      "simple-wirte",
       "bye"
     ]
 );
 
 define_function(
-    "little-test:help",
+    "first-function",
     [ "little-test",
       "end"
     ]
 );
 
 let function_body_for_little_test =
-    in_host_tag_hash_table.get("little-test:help")
+    in_host_tag_hash_table.get("first-function")
     + cell;
 
 let begin_to_interpret_threaded_code =
