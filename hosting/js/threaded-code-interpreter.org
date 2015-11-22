@@ -2,17 +2,15 @@
 #+AUTHOR: 謝宇恆 / XIE Yuheng
 #+PROPERTY: tangle threaded-code-interpreter.js
 
-* todo
+* helper
 
-  - basic test of threaded-code-interpreter in js
+*** header
 
-* header
+    #+begin_src js
+    "use strict";
+    #+end_src
 
-  #+begin_src js
-  "use strict";
-  #+end_src
-
-* architecture
+* interpreter
 
 *** memory
 
@@ -57,67 +55,69 @@
     // memory.current_free_address;
     #+end_src
 
-*** argument-stack
+*** stack
 
-    #+begin_src js
-    memory.allocate(1024);
-    // 1k safe underflow
+***** argument-stack
 
-    let argument_stack = {};
-    argument_stack.address = memory.allocate(1 * 1024 * 1024);
-    argument_stack.current_free_address = argument_stack.address;
+      #+begin_src js
+      memory.allocate(1024);
+      // 1k safe underflow
 
-    argument_stack.push =
-        function (value) {
-            memory.set(argument_stack.current_free_address, value);
-            argument_stack.current_free_address =
-                argument_stack.current_free_address + cell;
-        };
+      let argument_stack = {};
+      argument_stack.address = memory.allocate(1 * 1024 * 1024);
+      argument_stack.current_free_address = argument_stack.address;
 
-    argument_stack.pop =
-        function () {
-            argument_stack.current_free_address =
-                argument_stack.current_free_address - cell;
-            return memory.get(argument_stack.current_free_address);
-        };
+      argument_stack.push =
+          function (value) {
+              memory.set(argument_stack.current_free_address, value);
+              argument_stack.current_free_address =
+                  argument_stack.current_free_address + cell;
+          };
 
-    argument_stack.tos =
-        function () {
-            return memory.get(argument_stack.current_free_address - cell);
-        };
-    #+end_src
+      argument_stack.pop =
+          function () {
+              argument_stack.current_free_address =
+                  argument_stack.current_free_address - cell;
+              return memory.get(argument_stack.current_free_address);
+          };
 
-*** return-stack
+      argument_stack.tos =
+          function () {
+              return memory.get(argument_stack.current_free_address - cell);
+          };
+      #+end_src
 
-    #+begin_src js
-    memory.allocate(1024);
-    // 1k safe underflow
+***** return-stack
 
-    let return_stack = {};
-    return_stack.address = memory.allocate(1 * 1024 * 1024);
-    return_stack.current_free_address = return_stack.address;
+      #+begin_src js
+      memory.allocate(1024);
+      // 1k safe underflow
 
-    return_stack.push =
-        function (value) {
-            memory.set(return_stack.current_free_address, value);
-            return_stack.current_free_address =
-                return_stack.current_free_address + cell;
-        };
+      let return_stack = {};
+      return_stack.address = memory.allocate(1 * 1024 * 1024);
+      return_stack.current_free_address = return_stack.address;
 
-    return_stack.pop =
-        function () {
-            return_stack.current_free_address =
-                return_stack.current_free_address - cell;
-            return memory.get(return_stack.current_free_address);
-        };
+      return_stack.push =
+          function (value) {
+              memory.set(return_stack.current_free_address, value);
+              return_stack.current_free_address =
+                  return_stack.current_free_address + cell;
+          };
 
-    return_stack.tos =
-        function () {
-            return memory.get(return_stack.current_free_address - cell);
-        };
-    #+end_src
+      return_stack.pop =
+          function () {
+              return_stack.current_free_address =
+                  return_stack.current_free_address - cell;
+              return memory.get(return_stack.current_free_address);
+          };
 
-* in line define
+      return_stack.tos =
+          function () {
+              return memory.get(return_stack.current_free_address - cell);
+          };
+      #+end_src
+
+* in-line definition
 
 *** primitive-function-record
 
@@ -167,104 +167,6 @@
         };
     #+end_src
 
-*** help string-area
-
-    #+begin_src js
-    function codepoint_to_utf8_byte_array(charcode){
-        let array = [];
-
-        if (charcode < 0b10000000) {
-            // 0xxxxxxx
-            array.unshift(charcode);
-            return array;
-        }
-
-        array.unshift(0b10000000 | (charcode & 0b00111111));
-        charcode = charcode >>> 6;
-
-        if (charcode < 0b00100000) {
-            // 110xxxxx 10xxxxxx
-            array.unshift(0b11000000 | charcode);
-            return array;
-        }
-
-        array.unshift(0b10000000 | (charcode & 0b00111111));
-        charcode = charcode >>> 6;
-
-        if (charcode < 0b00010000) {
-            // 1110xxxx 10xxxxxx 10xxxxxx
-            array.unshift(0b11100000 | charcode);
-            return array;
-        }
-
-        array.unshift(0b10000000 | (charcode & 0b00111111));
-        charcode = charcode >>> 6;
-
-        if (charcode < 0b00001000) {
-            // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-            array.unshift(0b11110000 | charcode);
-            return array;
-        }
-
-        array.unshift(0b10000000 | (charcode & 0b00111111));
-        charcode = charcode >>> 6;
-
-        if (charcode < 0b00000100) {
-            // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-            array.unshift(0b11111000 | charcode);
-            return array;
-        }
-
-        array.unshift(0b10000000 | (charcode & 0b00111111));
-        charcode = charcode >>> 6;
-
-        {// else
-            // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-            array.unshift(0b11111100 | charcode);
-            return array;
-        }
-
-    }
-
-    // https://en.wikipedia.org/wiki/UTF-8
-    // codepoint_to_utf8_byte_array("€".codePointAt(0));
-    // [0b11100010, 0b10000010, 0b10101100]
-    // codepoint_to_utf8_byte_array("謝宇恆".codePointAt(0));
-    // codepoint_to_utf8_byte_array("謝宇恆".codePointAt(1));
-    // codepoint_to_utf8_byte_array("謝宇恆".codePointAt(2));
-    #+end_src
-
-*** string-area
-
-    #+begin_src js
-    let string_area = {};
-
-    string_area.address = memory.allocate(256 * 1024);
-    string_area.current_free_address = string_area.address;
-
-    function create_string(string){
-        let return_address = string_area.current_free_address;
-        let length = string.length;
-        let index = 0;
-
-        let set_byte = function (byte){
-            memory.set_byte(
-                string_area.current_free_address + index,
-                byte);
-            string_area.current_free_address
-                = string_area.current_free_address + 1;
-        };
-
-        for (index = 0; index < length; index++){
-            codepoint_to_utf8_byte_array(string.codePointAt(index))
-                .forEach(set_byte);
-        };
-        return return_address;
-    }
-
-    // create_string("謝宇恆");
-    #+end_src
-
 *** in-host-tag-hash-table
 
     - a clean tag space for threaded-code-interpreter
@@ -310,11 +212,9 @@
 
     let define_primitive_function =
         function (tag_string, fun) {
-            let tag_string_address = create_string(tag_string);
             let function_index = create_primitive_function(fun);
             data(link);
             link = memory.current_free_address - cell;
-            data(tag_string_address);
             mark(tag_string);
             data(primitive_function_explainer);
             data(function_index);
@@ -333,10 +233,8 @@
 
     let define_function =
         function (tag_string, function_tag_string_array) {
-            let tag_string_address = create_string(tag_string);
             data(link);
             link = memory.current_free_address - cell;
-            data(tag_string_address);
             mark(tag_string);
             data(function_explainer);
             function_tag_string_array.forEach(
@@ -360,41 +258,44 @@
 
     let define_variable =
         function (tag_string, value) {
-            let tag_string_address = create_string(tag_string);
             data(link);
             link = memory.current_free_address - cell;
-            data(tag_string_address);
             mark(tag_string);
             data(variable_explainer);
             data(value);
         };
     #+end_src
 
-* end
+* primitive-function
 
-  #+begin_src js
-  define_primitive_function(
-      "end",
-      function () {
-          return_stack.pop();
-          next();
-      }
-  );
-  #+end_src
+*** ending
 
-* *the-story-begin*
+***** end
+      #+begin_src js
+      define_primitive_function(
+          "end",
+          function () {
+              return_stack.pop();
+              next();
+          }
+      );
+      #+end_src
 
-*** print-tos
+*** io
 
-    #+begin_src js
-    define_primitive_function(
-        "print-tos",
-        function () {
-            console.log(argument_stack.pop());
-            next();
-        }
-    );
-    #+end_src
+***** print-tos
+
+      #+begin_src js
+      define_primitive_function(
+          "print-tos",
+          function () {
+              console.log(argument_stack.pop());
+              next();
+          }
+      );
+      #+end_src
+
+* play
 
 *** little-test
 
@@ -417,14 +318,14 @@
     );
 
     define_function(
-        "little-test:help",
+        "first-function",
         [ "little-test",
           "end"
         ]
     );
 
     let function_body_for_little_test =
-        in_host_tag_hash_table.get("little-test:help")
+        in_host_tag_hash_table.get("first-function")
         + cell;
     #+end_src
 

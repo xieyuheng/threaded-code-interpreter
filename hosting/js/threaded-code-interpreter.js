@@ -131,96 +131,6 @@ let next =
         primitive_function_record.get(explainer).call();
     };
 
-function codepoint_to_utf8_byte_array(charcode){
-    let array = [];
-
-    if (charcode < 0b10000000) {
-        // 0xxxxxxx
-        array.unshift(charcode);
-        return array;
-    }
-
-    array.unshift(0b10000000 | (charcode & 0b00111111));
-    charcode = charcode >>> 6;
-
-    if (charcode < 0b00100000) {
-        // 110xxxxx 10xxxxxx
-        array.unshift(0b11000000 | charcode);
-        return array;
-    }
-
-    array.unshift(0b10000000 | (charcode & 0b00111111));
-    charcode = charcode >>> 6;
-
-    if (charcode < 0b00010000) {
-        // 1110xxxx 10xxxxxx 10xxxxxx
-        array.unshift(0b11100000 | charcode);
-        return array;
-    }
-
-    array.unshift(0b10000000 | (charcode & 0b00111111));
-    charcode = charcode >>> 6;
-
-    if (charcode < 0b00001000) {
-        // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-        array.unshift(0b11110000 | charcode);
-        return array;
-    }
-
-    array.unshift(0b10000000 | (charcode & 0b00111111));
-    charcode = charcode >>> 6;
-
-    if (charcode < 0b00000100) {
-        // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-        array.unshift(0b11111000 | charcode);
-        return array;
-    }
-
-    array.unshift(0b10000000 | (charcode & 0b00111111));
-    charcode = charcode >>> 6;
-
-    {// else
-        // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-        array.unshift(0b11111100 | charcode);
-        return array;
-    }
-
-}
-
-// https://en.wikipedia.org/wiki/UTF-8
-// codepoint_to_utf8_byte_array("€".codePointAt(0));
-// [0b11100010, 0b10000010, 0b10101100]
-// codepoint_to_utf8_byte_array("謝宇恆".codePointAt(0));
-// codepoint_to_utf8_byte_array("謝宇恆".codePointAt(1));
-// codepoint_to_utf8_byte_array("謝宇恆".codePointAt(2));
-
-let string_area = {};
-
-string_area.address = memory.allocate(256 * 1024);
-string_area.current_free_address = string_area.address;
-
-function create_string(string){
-    let return_address = string_area.current_free_address;
-    let length = string.length;
-    let index = 0;
-
-    let set_byte = function (byte){
-        memory.set_byte(
-            string_area.current_free_address + index,
-            byte);
-        string_area.current_free_address
-            = string_area.current_free_address + 1;
-    };
-
-    for (index = 0; index < length; index++){
-        codepoint_to_utf8_byte_array(string.codePointAt(index))
-            .forEach(set_byte);
-    };
-    return return_address;
-}
-
-// create_string("謝宇恆");
-
 let in_host_tag_hash_table = new Map();
 
 let data =
@@ -248,11 +158,9 @@ let primitive_function_explainer =
 
 let define_primitive_function =
     function (tag_string, fun) {
-        let tag_string_address = create_string(tag_string);
         let function_index = create_primitive_function(fun);
         data(link);
         link = memory.current_free_address - cell;
-        data(tag_string_address);
         mark(tag_string);
         data(primitive_function_explainer);
         data(function_index);
@@ -267,10 +175,8 @@ let function_explainer =
 
 let define_function =
     function (tag_string, function_tag_string_array) {
-        let tag_string_address = create_string(tag_string);
         data(link);
         link = memory.current_free_address - cell;
-        data(tag_string_address);
         mark(tag_string);
         data(function_explainer);
         function_tag_string_array.forEach(
@@ -290,10 +196,8 @@ let variable_explainer =
 
 let define_variable =
     function (tag_string, value) {
-        let tag_string_address = create_string(tag_string);
         data(link);
         link = memory.current_free_address - cell;
-        data(tag_string_address);
         mark(tag_string);
         data(variable_explainer);
         data(value);
