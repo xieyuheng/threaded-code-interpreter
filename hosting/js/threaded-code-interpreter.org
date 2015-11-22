@@ -7,6 +7,7 @@
   - basic test of threaded-code-interpreter in js
 
 * header
+
   #+begin_src js
   "use strict";
   #+end_src
@@ -14,6 +15,7 @@
 * architecture
 
 *** memory
+
     #+begin_src js
     let cell = 4;
     // unit byte
@@ -56,6 +58,7 @@
     #+end_src
 
 *** argument-stack
+
     #+begin_src js
     memory.allocate(1024);
     // 1k safe underflow
@@ -85,6 +88,7 @@
     #+end_src
 
 *** return-stack
+
     #+begin_src js
     memory.allocate(1024);
     // 1k safe underflow
@@ -113,9 +117,10 @@
         };
     #+end_src
 
-* jojo
+* in line define
 
 *** primitive-function-record
+
     #+begin_src js
     let primitive_function_record = {};
 
@@ -147,21 +152,23 @@
     #+end_src
 
 *** next
+
     #+begin_src js
     var next_explainer_argument = 0;
 
     let next =
         function () {
-            let jojo = return_stack.pop();
-            let next_jojo = jojo + cell;
-            let explainer = memory.get(memory.get(jojo));
-            return_stack.push(next_jojo);
-            next_explainer_argument = memory.get(jojo) + cell;
+            let function_body = return_stack.pop();
+            let next_function_body = function_body + cell;
+            let explainer = memory.get(memory.get(function_body));
+            return_stack.push(next_function_body);
+            next_explainer_argument = memory.get(function_body) + cell;
             primitive_function_record.get(explainer).call();
         };
     #+end_src
 
 *** help string-area
+
     #+begin_src js
     function codepoint_to_utf8_byte_array(charcode){
         let array = [];
@@ -228,6 +235,7 @@
     #+end_src
 
 *** string-area
+
     #+begin_src js
     let string_area = {};
 
@@ -258,13 +266,16 @@
     #+end_src
 
 *** in-host-tag-hash-table
-    * a clean tag space for threaded-code-interpreter
+
+    - a clean tag space for threaded-code-interpreter
       used by in-host non-primitive-function
+
     #+begin_src js
     let in_host_tag_hash_table = new Map();
     #+end_src
 
 *** data & mark
+
     #+begin_src js
     let data =
         function (value) {
@@ -281,11 +292,13 @@
     #+end_src
 
 *** link
+
     #+begin_src js
     let link = 0;
     #+end_src
 
 *** primitive-function
+
     #+begin_src js
     let primitive_function_explainer =
         create_primitive_function(
@@ -309,6 +322,7 @@
     #+end_src
 
 *** function
+
     #+begin_src js
     let function_explainer =
         create_primitive_function(
@@ -334,6 +348,7 @@
     #+end_src
 
 *** variable
+
     #+begin_src js
     let variable_explainer =
         create_primitive_function(
@@ -356,6 +371,7 @@
     #+end_src
 
 * end
+
   #+begin_src js
   define_primitive_function(
       "end",
@@ -369,6 +385,7 @@
 * *the-story-begin*
 
 *** print-tos
+
     #+begin_src js
     define_primitive_function(
         "print-tos",
@@ -380,6 +397,7 @@
     #+end_src
 
 *** little-test
+
     #+begin_src js
     define_variable("*little-test-number*", 233);
 
@@ -405,28 +423,19 @@
         ]
     );
 
-    let jojo_for_little_test =
+    let function_body_for_little_test =
         in_host_tag_hash_table.get("little-test:help")
         + cell;
     #+end_src
 
 *** begin-to-interpret-threaded-code
+
     #+begin_src js
     let begin_to_interpret_threaded_code =
         function () {
-            return_stack.push(jojo_for_little_test);
+            return_stack.push(function_body_for_little_test);
             next();
         };
 
     begin_to_interpret_threaded_code();
-    #+end_src
-
-
-
-* epilog
-
-*** export for node.js
-    #+begin_src js
-    exports.begin_to_interpret_threaded_code
-      = begin_to_interpret_threaded_code;
     #+end_src

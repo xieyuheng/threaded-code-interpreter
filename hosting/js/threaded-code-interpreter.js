@@ -123,11 +123,11 @@ var next_explainer_argument = 0;
 
 let next =
     function () {
-        let jojo = return_stack.pop();
-        let next_jojo = jojo + cell;
-        let explainer = memory.get(memory.get(jojo));
-        return_stack.push(next_jojo);
-        next_explainer_argument = memory.get(jojo) + cell;
+        let function_body = return_stack.pop();
+        let next_function_body = function_body + cell;
+        let explainer = memory.get(memory.get(function_body));
+        return_stack.push(next_function_body);
+        next_explainer_argument = memory.get(function_body) + cell;
         primitive_function_record.get(explainer).call();
     };
 
@@ -339,17 +339,14 @@ define_function(
     ]
 );
 
-let jojo_for_little_test =
+let function_body_for_little_test =
     in_host_tag_hash_table.get("little-test:help")
     + cell;
 
 let begin_to_interpret_threaded_code =
     function () {
-        return_stack.push(jojo_for_little_test);
+        return_stack.push(function_body_for_little_test);
         next();
     };
 
 begin_to_interpret_threaded_code();
-
-exports.begin_to_interpret_threaded_code
-  = begin_to_interpret_threaded_code;
