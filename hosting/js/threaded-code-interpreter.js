@@ -192,7 +192,7 @@ let define_function =
 let variable_explainer =
     create_primitive_function(() => {
         argument_stack.push(
-            memory.get(address_after_explainer));
+        memory.get(address_after_explainer));
     });
 
 let define_variable =

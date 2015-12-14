@@ -13,7 +13,7 @@
     # unit byte
     # this global value should match the following interface
 
-    memory_size = 64 * 1024 * 1024
+    memory_size = 1024 * 1024
     memory_array_buffer = bytearray(memory_size)
     memory_current_free_address = 0
 
@@ -52,7 +52,7 @@
 ***** argument-stack
 
       #+begin_src python
-      memory_allocate(64)
+      memory_allocate(cell * 64)
       # underflow
 
       argument_stack_address = memory_allocate(cell * 1024)
@@ -74,7 +74,7 @@
 ***** return-stack
 
       #+begin_src python
-      memory_allocate(64)
+      memory_allocate(cell * 64)
       # underflow
 
       return_stack_address = memory_allocate(cell * 1024)
