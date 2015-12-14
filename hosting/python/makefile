@@ -14,7 +14,7 @@ tangle:
 	./tangle.el threaded-code-interpreter.org
 
 run:
-	node threaded-code-interpreter.js
+	python threaded-code-interpreter.py
 
 dev:
 	make clean
