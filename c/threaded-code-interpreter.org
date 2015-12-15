@@ -1,0 +1,27 @@
+#+TITLE:  threaded-code-interpreter in c
+#+AUTHOR: 謝宇恆 / XIE Yuheng
+#+PROPERTY: tangle threaded-code-interpreter.c
+
+* helper
+
+*** header
+
+* interpreter
+
+*** memory
+
+    #+begin_src c
+
+    #+end_src
+
+*** stack
+
+    #+begin_src c
+
+    #+end_src
+
+* in-line definition
+
+* primitive-function
+
+* play

@@ -1,0 +1,3 @@
+#+TITLE:  threaded-code-interpreter in c
+#+AUTHOR: 謝宇恆 / XIE Yuheng
+#+PROPERTY: tangle threaded-code-interpreter.c

@@ -43,7 +43,7 @@ memory.allocate =
 // memory.allocate(16);
 // memory.current_free_address;
 
-memory.allocate(64);
+memory.allocate(cell * 64);
 // underflow
 
 let argument_stack = {};
@@ -64,7 +64,7 @@ argument_stack.pop =
         return memory.get(argument_stack.current_free_address);
     };
 
-memory.allocate(64);
+memory.allocate(cell * 64);
 // underflow
 
 let return_stack = {};
@@ -86,9 +86,6 @@ return_stack.pop =
     };
 
 let primitive_function_record = {};
-
-// primitive_function_record.size = 4 * 1024;
-// primitive_function_record.map = new Array(primitive_function_record.size);
 
 primitive_function_record.counter = 0;
 primitive_function_record.map = new Map();

@@ -2,7 +2,7 @@ cell = 4
 # unit byte
 # this global value should match the following interface
 
-memory_size = 64 * 1024 * 1024
+memory_size = 1024 * 1024
 memory_array_buffer = bytearray(memory_size)
 memory_current_free_address = 0
 
@@ -35,7 +35,7 @@ def memory_allocate(size):
 # memory_allocate(16)
 # memory_current_free_address
 
-memory_allocate(64)
+memory_allocate(cell * 64)
 # underflow
 
 argument_stack_address = memory_allocate(cell * 1024)
@@ -53,7 +53,7 @@ def argument_stack_pop():
       argument_stack_current_free_address - cell
     return memory_get(argument_stack_current_free_address)
 
-memory_allocate(64)
+memory_allocate(cell * 64)
 # underflow
 
 return_stack_address = memory_allocate(cell * 1024)
