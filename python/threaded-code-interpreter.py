@@ -1,4 +1,5 @@
 cell = 4
+
 # unit byte
 # this global value should match the following interface
 
@@ -112,13 +113,13 @@ def interpreter():
         if exception.value == "bye":
             return
 
-in_host_tag_hash_table = {}
+in_host_tag_record = {}
 
-def in_host_tag_hash_table_get(string):
-    return in_host_tag_hash_table[string]
+def in_host_tag_record_get(string):
+    return in_host_tag_record[string]
 
-def in_host_tag_hash_table_set(string, address):
-    in_host_tag_hash_table.update({string : address})
+def in_host_tag_record_set(string, address):
+    in_host_tag_record.update({string : address})
 
 def data(value):
     global memory_current_free_address
@@ -127,7 +128,7 @@ def data(value):
       memory_current_free_address + cell
 
 def mark (tag_string):
-    in_host_tag_hash_table_set(
+    in_host_tag_record_set(
         tag_string,
         memory_current_free_address)
 
@@ -166,7 +167,7 @@ def define_function(tag_string, function_tag_string_array):
     mark(tag_string)
     data(function_explainer)
     for function_tag_string in function_tag_string_array:
-        data(in_host_tag_hash_table_get(function_tag_string))
+        data(in_host_tag_record_get(function_tag_string))
 
 def _variable_explainer():
     argument_stack_push(
@@ -241,7 +242,7 @@ define_function(
 )
 
 function_body_for_little_test = \
-  in_host_tag_hash_table_get("first-function") + cell
+  in_host_tag_record_get("first-function") + cell
 
 def begin_to_interpret_threaded_code():
     return_stack_push(function_body_for_little_test)

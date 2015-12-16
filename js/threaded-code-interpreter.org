@@ -168,13 +168,13 @@
 
 * in-line definition
 
-*** in-host-tag-hash-table
+*** in-host-tag-record
 
     - a clean tag space for threaded-code-interpreter
       used by in-host non-primitive-function
 
     #+begin_src js
-    let in_host_tag_hash_table = new Map();
+    let in_host_tag_record = new Map();
     #+end_src
 
 *** data & mark
@@ -189,7 +189,7 @@
 
     let mark =
         (tag_string) => {
-            in_host_tag_hash_table
+            in_host_tag_record
                 .set(tag_string, memory.current_free_address);
         };
     #+end_src
@@ -238,7 +238,7 @@
             data(function_explainer);
             function_tag_string_array.forEach(
                 function_tag_string => {
-                    data(in_host_tag_hash_table
+                    data(in_host_tag_record
                          .get(function_tag_string));
                 }
             );
@@ -367,7 +367,7 @@
     );
 
     let function_body_for_little_test =
-        in_host_tag_hash_table.get("first-function")
+        in_host_tag_record.get("first-function")
         + cell;
     #+end_src
 

@@ -10,6 +10,7 @@
 
     #+begin_src python
     cell = 4
+
     # unit byte
     # this global value should match the following interface
 
@@ -144,19 +145,19 @@
 
 * in-line definition
 
-*** in-host-tag-hash-table
+*** in-host-tag-record
 
     - a clean tag space for threaded-code-interpreter
       used by in-host non-primitive-function
 
     #+begin_src python
-    in_host_tag_hash_table = {}
+    in_host_tag_record = {}
 
-    def in_host_tag_hash_table_get(string):
-        return in_host_tag_hash_table[string]
+    def in_host_tag_record_get(string):
+        return in_host_tag_record[string]
 
-    def in_host_tag_hash_table_set(string, address):
-        in_host_tag_hash_table.update({string : address})
+    def in_host_tag_record_set(string, address):
+        in_host_tag_record.update({string : address})
     #+end_src
 
 *** data & mark
@@ -169,7 +170,7 @@
           memory_current_free_address + cell
 
     def mark (tag_string):
-        in_host_tag_hash_table_set(
+        in_host_tag_record_set(
             tag_string,
             memory_current_free_address)
     #+end_src
@@ -220,7 +221,7 @@
         mark(tag_string)
         data(function_explainer)
         for function_tag_string in function_tag_string_array:
-            data(in_host_tag_hash_table_get(function_tag_string))
+            data(in_host_tag_record_get(function_tag_string))
     #+end_src
 
 *** variable
@@ -336,7 +337,7 @@
     )
 
     function_body_for_little_test = \
-      in_host_tag_hash_table_get("first-function") + cell
+      in_host_tag_record_get("first-function") + cell
     #+end_src
 
 *** begin-to-interpret-threaded-code

@@ -132,7 +132,7 @@ let interpreter =
         }
     };
 
-let in_host_tag_hash_table = new Map();
+let in_host_tag_record = new Map();
 
 let data =
     (value) => {
@@ -143,7 +143,7 @@ let data =
 
 let mark =
     (tag_string) => {
-        in_host_tag_hash_table
+        in_host_tag_record
             .set(tag_string, memory.current_free_address);
     };
 
@@ -180,7 +180,7 @@ let define_function =
         data(function_explainer);
         function_tag_string_array.forEach(
             function_tag_string => {
-                data(in_host_tag_hash_table
+                data(in_host_tag_record
                      .get(function_tag_string));
             }
         );
@@ -268,7 +268,7 @@ define_function(
 );
 
 let function_body_for_little_test =
-    in_host_tag_hash_table.get("first-function")
+    in_host_tag_record.get("first-function")
     + cell;
 
 let begin_to_interpret_threaded_code =
