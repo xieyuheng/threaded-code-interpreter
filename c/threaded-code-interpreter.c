@@ -131,7 +131,7 @@ Void primitive_function_record_set
 
 Value create_primitive_function(PrimitiveFunction fun) {
   Value return_address = primitive_function_record_counter;
-  primitive_function_record_set \
+  primitive_function_record_set
     (primitive_function_record_counter, fun);
   primitive_function_record_counter =
     primitive_function_record_counter + 1;
