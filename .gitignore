@@ -1,2 +1,8 @@
 threaded-code-interpreter
 *~
+
+*.o
+*.cmi
+*.cmo
+*.cmx
+a.out

@@ -94,7 +94,8 @@
            [next-function-body (+ function-body cell)]
            [explainer (memory:get (memory:get function-body))])
       (return-stack:push next-function-body)
-      (set! next:explainer-argument (+ (memory:get function-body) cell))
+      (set! next:explainer-argument
+            (+ (memory:get function-body) cell))
       ((primitive-function-record:get explainer)))))
 
 (define in-host-name-record (make-hasheq))
