@@ -183,11 +183,12 @@ let mark
 let link = ref 0 ;;
 
 let define_header
-: string -> unit
-= fun name_string ->
+: string -> int -> unit
+= fun name_string explainer ->
   data !link;
   link := !memory_pointer - cell;
   mark name_string;
+  data explainer;
 ;;
 
 let primitive_function_explainer
@@ -203,8 +204,7 @@ let define_primitive_function
 = fun name_string primitive_function ->
   let function_index =
     create_primitive_function primitive_function in
-  define_header name_string;
-  data primitive_function_explainer;
+  define_header name_string primitive_function_explainer;
   data function_index;
 ;;
 
@@ -219,8 +219,7 @@ let function_explainer
 let define_function
 : string -> string list -> unit
 = fun name_string name_string_list ->
-  define_header name_string;
-  data function_explainer;
+  define_header name_string function_explainer;
   List.iter
     (fun name_string ->
        data (Hashtbl.find in_host_name_record name_string))
@@ -238,8 +237,7 @@ let variable_explainer
 let define_variable
 : string -> value -> unit
 = fun name_string value ->
-  define_header name_string;
-  data variable_explainer;
+  define_header name_string variable_explainer;
   data value;
 ;;
 

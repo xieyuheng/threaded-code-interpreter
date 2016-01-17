@@ -1,88 +1,68 @@
 "use strict";
 
-let cell = 4;
-// unit byte
-// this global value should match the following interface
+let cell_area = {};
 
-let memory = {};
+cell_area.size = 1024 * 1024;
+cell_area.array = new Array(cell_area.size);
+cell_area.pointer = 0;
 
-memory.size = 1024 * 1024;
-memory.array_buffer = new ArrayBuffer(memory.size);
-memory.dataview = new DataView(memory.array_buffer);
-memory.current_free_address = 0;
-
-memory.get_byte =
+cell_area.get =
   (index) => {
-    return memory.dataview.getUint8(index);
+    return cell_area.array[index];
   };
-memory.set_byte =
+cell_area.set =
   (index, value) => {
-    memory.dataview.setUint8(index, value);
+    cell_area.array[index] = value;
   };
 
-memory.get =
-  (index) => {
-    return memory.dataview.getUint32(index);
-  };
-memory.set =
-  (index, value) => {
-    memory.dataview.setUint32(index, value);
-  };
-
-memory.allocate =
+cell_area.allocate =
   (size) => {
-    let return_address = memory.current_free_address;
-    memory.current_free_address = return_address + size;
+    let return_address = cell_area.pointer;
+    cell_area.pointer = return_address + size;
     return return_address;
   };
 
-// memory.set(1, 231);
-// memory.get(1);
-// memory.set(1, 0);
-// memory.get(1);
-// memory.allocate(16);
-// memory.current_free_address;
-
-memory.allocate(cell * 64);
-// underflow
+// cell_area.set(1, 231);
+// cell_area.get(1);
+// cell_area.set(1, 0);
+// cell_area.get(1);
+// cell_area.allocate(16);
+// cell_area.pointer;
 
 let argument_stack = {};
-argument_stack.address = memory.allocate(cell * 1024);
-argument_stack.current_free_address = argument_stack.address;
+argument_stack.array = new Array(1024);
+argument_stack.pointer = 0;
 
 argument_stack.push =
   (value) => {
-    memory.set(argument_stack.current_free_address, value);
-    argument_stack.current_free_address =
-      argument_stack.current_free_address + cell;
+    argument_stack.array[argument_stack.pointer] = value;
+    argument_stack.pointer =
+      argument_stack.pointer + 1;
   };
 
 argument_stack.pop =
   () => {
-    argument_stack.current_free_address =
-      argument_stack.current_free_address - cell;
-    return memory.get(argument_stack.current_free_address);
+    argument_stack.pointer =
+      argument_stack.pointer - 1;
+    return argument_stack.array[argument_stack.pointer];
   };
 
-memory.allocate(cell * 64);
-// underflow
-
 let return_stack = {};
-return_stack.address = memory.allocate(cell * 1024);
-return_stack.current_free_address = return_stack.address;
+return_stack.array = new Array(1024);
+return_stack.pointer = 0;
 
 return_stack.push =
   (value) => {
-    memory.set(return_stack.current_free_address, value);
-    return_stack.current_free_address =
-      return_stack.current_free_address + cell;
+    return_stack.array[return_stack.pointer] = value;
+    return_stack.pointer =
+      return_stack.pointer + 1;
   };
 
 return_stack.pop =
   () => {
-    return_stack.current_free_address =
-      return_stack.current_free_address - cell;
-    return memory.get(return_stack.current_free_address);
+    return_stack.pointer =
+      return_stack.pointer - 1;
+    return return_stack.array[return_stack.pointer];
   };
 
 let primitive_function_record = {};
@@ -116,10 +96,11 @@ let interpreter =
     () => {
       try {
         while (true) {
-          let function_body = return_stack.pop();
-          let explainer = memory.get(memory.get(function_body));
-          return_stack.push(function_body + cell);
-          address_after_explainer = memory.get(function_body) + cell;
+          let jojo = return_stack.pop();
+          let jo = cell_area.get(jojo);
+          let explainer = cell_area.get(jo);
+          return_stack.push(jojo + 1);
+          address_after_explainer = jo + 1;
           primitive_function_record.get(explainer).call();
           continue;
         }
@@ -136,34 +117,39 @@ let in_host_tag_record = new Map();
 
 let data =
     (value) => {
-      memory.set(memory.current_free_address, value);
-      memory.current_free_address =
-        memory.current_free_address + cell;
+      cell_area.set(cell_area.pointer, value);
+      cell_area.pointer =
+        cell_area.pointer + 1;
     };
 
 let mark =
     (tag_string) => {
       in_host_tag_record
-        .set(tag_string, memory.current_free_address);
+        .set(tag_string, cell_area.pointer);
     };
 
 let link = 0;
+
+let define_header =
+    (tag_string, explainer) => {
+      data(link);
+      link = cell_area.pointer - 1;
+      mark(tag_string);
+      data(explainer);
+    };
 
 let primitive_function_explainer =
     create_primitive_function(
       () => {
         primitive_function_record.get(
-          memory.get(address_after_explainer)
+          cell_area.get(address_after_explainer)
         ).call();
       });
 
 let define_primitive_function =
     (tag_string, fun) => {
       let function_index = create_primitive_function(fun);
-      data(link);
-      link = memory.current_free_address - cell;
-      mark(tag_string);
-      data(primitive_function_explainer);
+      define_header(tag_string, primitive_function_explainer);
       data(function_index);
     };
 
@@ -174,10 +160,7 @@ let function_explainer =
 
 let define_function =
     (tag_string, function_tag_string_array) => {
-      data(link);
-      link = memory.current_free_address - cell;
-      mark(tag_string);
-      data(function_explainer);
+      define_header(tag_string, function_explainer);
       function_tag_string_array.forEach(
         function_tag_string => {
           data(in_host_tag_record
@@ -189,15 +172,12 @@ let define_function =
 let variable_explainer =
     create_primitive_function(() => {
       argument_stack.push(
-        memory.get(address_after_explainer));
+        cell_area.get(address_after_explainer));
     });
 
 let define_variable =
     (tag_string, value) => {
-      data(link);
-      link = memory.current_free_address - cell;
-      mark(tag_string);
-      data(variable_explainer);
+      define_header(tag_string, variable_explainer);
       data(value);
     };
 
@@ -269,7 +249,7 @@ define_function(
 
 let function_body_for_little_test =
     in_host_tag_record.get("first-function")
-    + cell;
+    + 1;
 
 let begin_to_interpret_threaded_code =
     () => {
