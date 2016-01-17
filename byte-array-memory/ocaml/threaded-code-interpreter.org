@@ -1,4 +1,4 @@
-#+TITLE:  threaded-code-interpreter in racket
+#+TITLE:  threaded-code-interpreter in ocaml
 #+AUTHOR: 謝宇恆 / XIE Yuheng
 #+PROPERTY: tangle threaded-code-interpreter.ml
 
