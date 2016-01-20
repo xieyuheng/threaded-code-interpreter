@@ -3,9 +3,8 @@
 
 %% threaded code interpreter embeded in prolog
 
-%% :- module(interpreter,
-%%           [
-%%            begin_to_interpret_threaded_code/0]).
+:- module(interpreter,
+          [begin_to_interpret_threaded_code/0]).
 
 :- use_module(array).
 
