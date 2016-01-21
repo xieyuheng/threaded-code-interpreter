@@ -12,7 +12,7 @@ in forth it is also called 'the inner interpreter'.
 
 ## aim
 
-this repo shows how to embed threaded-code-interpreter in other language.
+this repo shows how to embed threaded-code-interpreter in other languages.
 
 --------------------------
 
@@ -26,11 +26,9 @@ I will write more documentations to explain the technic used.
 
 ## play
 
-you do not have to fork this repo to learn it,
+no need to fork this repo,
 
 you can simply copy the code and play with it,
-
-and create your own repo,
 
 if you add something new worth sharing,
 
