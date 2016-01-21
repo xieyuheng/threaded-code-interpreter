@@ -9,9 +9,8 @@ in forth it is also called 'the inner interpreter'.
 this repo teaches you
 how to embed threaded-code-interpreter in other language by examples.
 
-in my view,
-every programmer should understand threaded-code-interpreter thoroughly,
-and use it as a concrete model
+to understand threaded-code-interpreter thoroughly,
+then you can use it as a concrete model
 to learn the semantics of other languages.
 (so called operational semantics)
 
