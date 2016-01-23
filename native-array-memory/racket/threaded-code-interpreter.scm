@@ -86,9 +86,8 @@
   (lambda ()
     (let* ([jojo (return-stack:pop)]
            [jo (cell-area:get jojo)]
-           [next-jojo (+ jojo 1)]
            [explainer (cell-area:get jo)])
-      (return-stack:push next-jojo)
+      (return-stack:push (+ jojo 1))
       (set! next:explainer-argument (+ jo 1))
       ((primitive-function-record:get explainer)))))
 
