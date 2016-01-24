@@ -1,5 +1,49 @@
 "use strict";
 
+function Buffer (size, init_value) {
+  this.size = size;
+  this.array = new Array(size);
+  this.array.fill(init_value);
+  this.cursor = 0;
+};
+
+Buffer.prototype = {
+  set: function (index, value) {
+    this.array[index] = value;
+  },
+
+  get: function (index) {
+    return this.array[index];
+  },
+
+  add_cursor: function (value) {
+    this.cursor = this.cursor + value;
+  },
+
+  allocate: function (size) {
+    let return_address = this.cursor;
+    this.add_cursor(size);
+    return return_address;
+  }
+};
+
+function Stack (size, init_value) {
+  Buffer.call(this, size, init_value);
+  this.cursor = 0;
+};
+
+Stack.prototype = Object.create(Buffer.prototype);
+
+Stack.prototype.push = function (value) {
+  this.set(this.cursor, value);
+  this.add_cursor(1);
+};
+
+Stack.prototype.pop = function () {
+  this.add_cursor(-1);
+  return this.get(this.cursor);
+};
+
 let cell_area = new Buffer(1024 * 1024, 0);
 
 let argument_stack = new Stack(1024, 0);

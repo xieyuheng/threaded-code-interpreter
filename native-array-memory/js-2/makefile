@@ -9,13 +9,15 @@ help:
 	echo "  please read the makefile for more informations"
 	echo -e "\e[0m"
 
-# run:
-# 	node interpreter.js
+tangle:
+	./tangle.el interpreter.org
+run:
+	node interpreter.js
 
 dev:
 	make clean
 	make tangle
-# 	make run
+	make run
 
 clean:
 	@
