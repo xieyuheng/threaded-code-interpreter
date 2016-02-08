@@ -1,0 +1,205 @@
+#+TITLE:  threaded-code-interpreter in js
+#+AUTHOR: 謝宇恆 / XIE Yuheng
+#+PROPERTY: tangle interpreter.coffee
+
+* helper
+
+*** header
+
+*** buffer
+
+    #+begin_src coffee
+    class BUFFER
+
+      constructor: (@size, @init_value) ->
+        @array = new Array(@size)
+        @array.fill(@init_value)
+        @cursor = 0
+
+      set: (index, value) ->
+        @array[index] = value
+
+      get: (index) ->
+        @array[index]
+
+      add_cursor: (value) ->
+        @cursor = @cursor + value
+
+      allocate: (size) ->
+        return_address = @cursor
+        @add_cursor(size)
+        return_address
+    #+end_src
+
+*** stack
+
+    #+begin_src coffee
+    class STACK extends BUFFER
+
+      push: (value) ->
+        @set(@cursor, value)
+        @add_cursor(1)
+
+      pop: ->
+        @add_cursor(-1)
+        @get(@cursor)
+    #+end_src
+
+* interpreter
+
+  #+begin_src coffee
+  cell_area = new BUFFER(1024 * 1024, 0)
+
+  argument_stack = new STACK(1024, 0)
+  return_stack = new STACK(1024, 0)
+
+  primitive_function_record = new BUFFER(1024, 0)
+
+  create_primitive_function = (fun) ->
+    return_address = primitive_function_record.cursor
+    primitive_function_record
+      .set(return_address, fun)
+    primitive_function_record.add_cursor(1)
+    return_address
+
+  address_after_explainer = 0
+
+  interpreter = () ->
+    try
+      while (true)
+        jojo = return_stack.pop()
+        jo = cell_area.get(jojo)
+        explainer = cell_area.get(jo)
+        return_stack.push(jojo + 1)
+        address_after_explainer = jo + 1
+        primitive_function_record.get(explainer).call()
+    catch string
+        if string == "bye"
+          console.log "bye"
+        else
+          console.log "unknow exception"
+
+  in_host_tag_record = new Map()
+
+  data = (value) ->
+    cell_area.set(cell_area.cursor, value)
+    cell_area.add_cursor(1)
+
+  mark = (tag_string) ->
+    in_host_tag_record.set(tag_string, cell_area.cursor)
+
+  link = 0
+
+  define_header = (tag_string, explainer) ->
+    data(link)
+    link = cell_area.cursor - 1
+    mark(tag_string)
+    data(explainer)
+
+  primitive_function_explainer =
+    create_primitive_function \
+      () ->
+        (primitive_function_record.get \
+          cell_area.get(address_after_explainer)
+        ).call()
+
+
+  define_primitive_function = (tag_string, fun) ->
+    function_index = create_primitive_function(fun)
+    define_header(tag_string, primitive_function_explainer)
+    data(function_index)
+
+
+  function_explainer = create_primitive_function \
+    () ->
+      return_stack.push(address_after_explainer)
+
+
+  define_function = (tag_string, function_tag_string_array) ->
+    define_header tag_string, function_explainer
+    function_tag_string_array.forEach \
+      (function_tag_string) ->
+        data in_host_tag_record.get function_tag_string
+
+
+  variable_explainer = create_primitive_function \
+    () ->
+      argument_stack.push cell_area.get address_after_explainer
+
+
+  define_variable = (tag_string, value) ->
+    define_header(tag_string, variable_explainer)
+    data(value)
+  #+end_src
+
+* primitive
+
+  #+begin_src coffee
+  define_primitive_function \
+    "end",
+    () ->
+      return_stack.pop()
+
+  define_primitive_function \
+    "bye",
+    () ->
+      console.log("bye bye ^-^/")
+      throw "bye"
+
+  define_primitive_function \
+    "dup",
+    () ->
+      a = argument_stack.pop()
+      argument_stack.push(a)
+      argument_stack.push(a)
+
+  define_primitive_function \
+    "mul",
+    () ->
+      a = argument_stack.pop()
+      b = argument_stack.pop()
+      argument_stack.push(a * b)
+
+  define_primitive_function \
+    "simple-wirte",
+    () ->
+      console.log(argument_stack.pop())
+  #+end_src
+
+* play
+
+*** little-test
+
+    #+begin_src coffee
+    define_variable "little-test-number", 4
+
+    define_function \
+      "square",
+      [ "dup"
+        "mul"
+        "end" ]
+
+    define_function \
+      "little-test",
+      [ "little-test-number"
+        "square"
+        "simple-wirte"
+        "bye" ]
+
+    define_function \
+      "first-function",
+      [ "little-test"
+        "end" ]
+    #+end_src
+
+*** begin_to_interpret_threaded_code
+
+    #+begin_src coffee
+    begin_to_interpret_threaded_code = () ->
+      function_body_for_little_test =
+            in_host_tag_record.get("first-function") + 1
+      return_stack.push(function_body_for_little_test)
+      interpreter()
+
+    begin_to_interpret_threaded_code()
+    #+end_src
