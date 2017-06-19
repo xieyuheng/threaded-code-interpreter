@@ -36,7 +36,3 @@ you can editing [this wiki page](https://github.com/cicada-language/threaded-cod
 to share.
 
 --------------------------
-
-best wishes :)
-
---------------------------
